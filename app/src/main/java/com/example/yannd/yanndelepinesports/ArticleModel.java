@@ -9,6 +9,9 @@ import java.util.Date;
  */
 
 public class ArticleModel {
+
+     private long id;
+
      @SerializedName("author")
      private String author;
      @SerializedName("title")
