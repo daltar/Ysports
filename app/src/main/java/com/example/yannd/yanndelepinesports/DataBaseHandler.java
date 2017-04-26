@@ -1,3 +1,4 @@
+
 package com.example.yannd.yanndelepinesports;
 
 
@@ -58,15 +59,15 @@ public class DataBaseHandler extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean insertData(String name,String surname,String marks) {
+    public boolean insertData(ArticleModel articleModel) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put(ARTICLE_AUTHOR,name);
-        contentValues.put(ARTICLE_TITLE,surname);
-        contentValues.put(ARTICLE_DESCRIPTION,marks);
-        contentValues.put(ARTICLE_URL,marks);
-        contentValues.put(ARTICLE_URLTOIMAGE,marks);
-        contentValues.put(ARTICLE_PUBLISHEDATE,marks);
+        contentValues.put(ARTICLE_AUTHOR,articleModel.getAuthor());
+        contentValues.put(ARTICLE_TITLE,articleModel.getTitle());
+        contentValues.put(ARTICLE_DESCRIPTION,articleModel.getDescription());
+        contentValues.put(ARTICLE_URL,articleModel.getUrl());
+        contentValues.put(ARTICLE_URLTOIMAGE,articleModel.getUrlToImage());
+        contentValues.put(ARTICLE_PUBLISHEDATE,articleModel.getPublishedAt());
         long result = db.insert(ARTICLE_TABLE_NAME,null ,contentValues);
         if(result == -1)
             return false;

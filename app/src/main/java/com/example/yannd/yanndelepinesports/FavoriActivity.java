@@ -1,26 +1,20 @@
 package com.example.yannd.yanndelepinesports;
 
 import android.app.ProgressDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.content.Context;
-import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -43,11 +37,15 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Created by yannd on 25/04/2017.
+ */
 
-public class MainActivity extends AppCompatActivity {
+public class FavoriActivity extends AppCompatActivity {
 
-    private final String URL_TO_HIT = "https://newsapi.org/v1/articles?source=bbc-sport&sortBy=top&apiKey=ba6950d566cc4fd7a8d0ddd78797f385";
+
     DataBaseHandler myDb;
+    private TextView tvData;
     private ListView lvArticles;
     private ProgressDialog dialog;
 
@@ -55,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        myDb = new DataBaseHandler(this);
+
 
         dialog = new ProgressDialog(this);
         dialog.setIndeterminate(true);
@@ -73,12 +73,31 @@ public class MainActivity extends AppCompatActivity {
 
         lvArticles = (ListView)findViewById(R.id.lvArticles);
 
-        // To start fetching the data when app start, uncomment below line to start the async task.
-        new JSONTask().execute(URL_TO_HIT);
+
+        Cursor res = myDb.getAllData();
+
+        StringBuffer buffer = new StringBuffer();
+        JSONArray favorilist = new JSONArray();
+        while (res.moveToNext()) {
+            try {
+                String json = res.getString(0);
+                JSONObject favori = new JSONObject(json);
+                favorilist.put(favori);
+
+            } catch (JSONException e){
+                e.printStackTrace();
+            }
+        }
+
+
+
+
 
 
     }
-    public class JSONTask extends AsyncTask<String,String, List<ArticleModel> >{
+
+
+    public class JSONTask extends AsyncTask<String,String, List<ArticleModel> > {
 
         @Override
         protected void onPreExecute() {
@@ -150,30 +169,26 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(result);
             dialog.dismiss();
             if(result != null) {
-                ArticleAdapter adapter = new ArticleAdapter(getApplicationContext(), R.layout.row, result);
+                FavoriActivity.JSONTask.ArticleAdapter adapter = new FavoriActivity.JSONTask.ArticleAdapter(getApplicationContext(), R.layout.row, result);
                 lvArticles.setAdapter(adapter);
-              lvArticles.setOnItemClickListener(new AdapterView.OnItemClickListener() {  // list item click opens a new detailed activity
+              /*   lvArticles.setOnItemClickListener(new AdapterView.OnItemClickListener() {  // list item click opens a new detailed activity
                    @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         ArticleModel articleModel = result.get(position); // getting the model
-
-                       myDb = new DataBaseHandler(MainActivity.this);
-                       boolean isInserted = myDb.insertData(articleModel);
-                       if(isInserted == true)
-                           System.out.println("insert "+ articleModel.getTitle());
-                       else
-                           System.out.println("fail "+ articleModel.getTitle());
+                        Intent intent = new Intent(MainActivity.this, DetailActivity.class);
+                        intent.putExtra("movieModel", new Gson().toJson(articleModel)); // converting model json into string type and sending it via intent
+                        startActivity(intent);
                     }
                 });
             } else {
                 Toast.makeText(getApplicationContext(), "Not able to fetch data from server, please check url.", Toast.LENGTH_SHORT).show();
+            }*/
             }
-            }
+        }
 
 
 
-
-        public class ArticleAdapter extends ArrayAdapter{
+        public class ArticleAdapter extends ArrayAdapter {
 
             private List<ArticleModel> articleModelList;
             private int resource;
@@ -188,10 +203,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
 
-                ViewHolder holder = null;
+                FavoriActivity.JSONTask.ArticleAdapter.ViewHolder holder = null;
 
                 if(convertView == null){
-                    holder = new ViewHolder();
+                    holder = new FavoriActivity.JSONTask.ArticleAdapter.ViewHolder();
                     convertView = inflater.inflate(resource, null);
                     holder.ivArticleIcon = (ImageView)convertView.findViewById(R.id.ivIcon);
                     holder.tvArticle = (TextView)convertView.findViewById(R.id.tvArticle);
@@ -200,13 +215,13 @@ public class MainActivity extends AppCompatActivity {
 
                     convertView.setTag(holder);
                 } else {
-                    holder = (ViewHolder) convertView.getTag();
+                    holder = (FavoriActivity.JSONTask.ArticleAdapter.ViewHolder) convertView.getTag();
                 }
 
                 final ProgressBar progressBar = (ProgressBar)convertView.findViewById(R.id.progressBar);
 
                 // Then later, when you want to display image
-                final ViewHolder finalHolder = holder;
+                final FavoriActivity.JSONTask.ArticleAdapter.ViewHolder finalHolder = holder;
                 ImageLoader.getInstance().displayImage(articleModelList.get(position).getUrlToImage(), holder.ivArticleIcon, new ImageLoadingListener() {
                     @Override
                     public void onLoadingStarted(String imageUri, View view) {
@@ -254,5 +269,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
 
 }
